@@ -3,7 +3,7 @@ A simple password generator that asks the user to select the complexity of the p
 
 ### Usage
 ```
-  python3 password_generator.py
+   $ python3 password_generator.py
 ```
 ### Output
 > What type of password would you like?
