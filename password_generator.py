@@ -2,61 +2,111 @@ import random
 import string
 
 
-def create_password(pw_length, pw_type):
-    """ creates a strong password pw_length characters long
-        and of a given pw_type
-        type 1: letters and digits
-        type 2: letters, digits, and limited special characters '!@#$%^&*()'
-        type 3: letters, digits, and all special characters
-    """
+class PasswordGenerator:
 
-    rng = random.SystemRandom()
-    letters = string.ascii_letters
-    digits = string.digits
-    limited_special = "!@#$%^&*()_-+="
-    all_special = string.punctuation
-    new_password = ""
+    def __init__(self):
+        self.rng = random.SystemRandom()
+        self.letters = string.ascii_letters
+        self.digits = string.digits
+        self.limited_special = "!@#$%^&*()_-+="
+        self.all_special = string.punctuation
+        self.new_password = ""
+        self.length = 16
+        self.xkcd_word_list = []
 
-    if pw_type == "1":
-        possible_characters = letters + digits
-    elif pw_type == "2":
-        possible_characters = letters + digits + limited_special
-    else:
-        possible_characters = letters + digits + all_special
+    def create_xkcd_word_list(self):
+        word_dictionary = []
+        with open('words.txt') as words:
+            for line in words:
+                if line[0].isalpha() and len(line) >= 5 and "'" not in line:
+                    word_dictionary.append(line[:-1])
+            self.xkcd_word_list = word_dictionary
 
-    for i in range(pw_length):
-        new_password += rng.choice(possible_characters)
+    def set_length(self, length):
+        try:
+            length = int(length)
+            if 8 <= length <= 128:
+                self.length = length
+            else:
+                raise ValueError("Length must be an integer between 8 and 128.")
+        except:
+            raise TypeError("Length must be and integer")
 
-    return new_password
+    def make_random_password(self, pwd_chars):
+        password = ""
+        for i in range(self.length):
+            next_char = self.rng.choice(pwd_chars)
+            password += next_char
+        return password
 
-""" turn each choice section into a function
-    mainloop the while portion
-    impliment better clear screen
-"""
+    def make_simple_password(self):
+        poss_pw_chars = self.letters + self.digits
+        return self.make_random_password(poss_pw_chars)
 
-make_new_pw = "Yes"
-while make_new_pw not in "Nn":
-    print("\n\n\n\n\n\n\n\n\n\n")
-    print("What type of password would you like?")
-    print("Type 1: Only letters and digits")
-    print("Type 2: Letters, digits and a limited number of special characters")
-    print("\t\t--> !@#$%^&*()")
-    print("Type 3: Letters, digits, and all the special characters")
-    print("""\t\t--> ~`!@#$%^&*()_-+={[\}]|\\:;"'<,>.?/""")
-    pw_type = input("Enter Type Number:")
-    if pw_type not in ["1", "2", "3"]:
-        print("Password type must be between 1 and 3")
-        continue
-    pw_length = input("Enter desired password length (between 8 and 128):")
-    try:
-        pw_length = int(pw_length)
-    except:
-        print("Password must be an interget between 8 and 128")
-        continue
-    if pw_length > 128 or pw_length < 8:
-        print("Password must be between 8 and 100")
-        continue
-    new_password = create_password(pw_length, pw_type)
-    print("Your new password is: {}".format(new_password))
+    def make_basic_complex_password(self):
+        poss_pw_chars = self.letters + self.digits + self.limited_special
+        return self.make_random_password(poss_pw_chars)
 
-    make_new_pw = input("Create new password? (Y/n):")
+    def make_full_complex_password(self):
+        poss_pw_chars = self.letters + self.digits + self.all_special
+        return self.make_random_password(poss_pw_chars)
+
+    def make_xkcd_password(self):
+        if self.xkcd_word_list == []:
+            self.create_xkcd_word_list()
+        word_dictionary = list(self.xkcd_word_list)
+        """ rng.choice() is used as it is much faster than rng.shuffle()
+            given size of words.txt (300,000+ words)
+            it is unlikely to generate duplicates """
+        word_1 = self.rng.choice(word_dictionary)
+        word_2 = self.rng.choice(word_dictionary)
+        word_3 = self.rng.choice(word_dictionary)
+        word_4 = self.rng.choice(word_dictionary)
+
+        password = word_1 + word_2 + word_3 + word_4
+        return password
+
+    def make_complex_xkcd_password(self):
+        password = self.make_xkcd_password()
+        spec_char = "!@#*"
+        for _ in range(4):
+            index_num = self.rng.randrange(0, len(password))
+            char = password[index_num].upper()
+            if index_num == 0:
+                password = char + password[1:]
+            elif index_num == len(password)-1:
+                password = password[:index_num] + char
+            else:
+                password = password[0:index_num] + char + password[index_num+1:]
+        for i in range(4):
+            index_num = self.rng.randrange(0, len(password))
+            char = spec_char[i]
+            if index_num == 0:
+                password = spec_char + password
+            elif index_num == len(password)-1:
+                password = password + char
+            else:
+                password = password[:index_num] + char + password[index_num:]
+        return password
+
+    def complexify_password(self, string):
+
+        return None
+
+    def choose_password_type(self):
+
+        return None
+
+    def get_options_menu(self):
+        menu = ["Option 1: Simple Random Password (only letters and digits)",
+                "Option 2: Complex Random Password (letters, digits, and !@#$%()^&* )",
+                "Option 3: Full Complex Random Passowrd (letters, digits, and all posible special characters)",
+                "Option 4: XKCD Password (four random words)",
+                "Option 5: XKCD Password with added complexity (four random words with special characters)",
+                "Option 6: Complixify password (takes a given string and adds complexity to it, ex: password --> p4$sW*rd)"]
+
+        menu_str = ""
+        for menu_item in menu:
+            menu_str += menu_item + "\n"
+
+        return menu_str
