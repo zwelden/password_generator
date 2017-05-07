@@ -13,6 +13,9 @@ class PasswordGenerator:
         self.new_password = ""
         self.length = 16
         self.xkcd_word_list = []
+        self.adj_list = []
+        self.adv_list = []
+        self.noun_list = []
 
     def create_xkcd_word_list(self):
         word_dictionary = []
@@ -90,8 +93,72 @@ class PasswordGenerator:
         return password
 
     def complexify_password(self, string):
+        password = "".join(string.lower().strip().split())
+        spec_count = 0  # counts number of characters that can be made special
+        spec_holder = []
+        spec_dict = {"a": "@", "c": "(", "h":"#", "i":"!", "o":"*", "s":"$", "v":"<", "x":"%"}
+        num_count = 0 # counts number of characters that can be made numbers
+        num_holder = []
+        num_dict = {"a":"4", "b":"8", "e":"3", "g":"6", "l":"1", "o":"0", "q":"9", "s":"5", "t":"7", "z":"2"}
+        for i in password:
+            if i in "achiosvx" and i not in spec_holder:
+                spec_count += 1
+                spec_holder.append(i)
+            elif i in "abegloqstz" and i not in num_holder:
+                num_count += 1
+                num_holder.append(i)
 
-        return None
+        # replace up to 2 characters from spec_dict if present otherwise add special characters to beginning/end
+        if spec_count == 1:
+            password = password.replace(spec_holder[0], spec_dict[spec_holder[0]])
+            password = password + self.rng.chioce(self.limited_special)
+        elif spec_count == 2:
+            password = password.replace(spec_holder[0], spec_dict[spec_holder[0]], 1)
+            password = password.replace(spec_holder[1], spec_dict[spec_holder[1]], 1)
+        elif spec_count > 2:
+            char1 = self.rng.choice(spec_holder)
+            char2 = self.rng.choice(spec_holder)
+            password = password.replace(char1, spec_dict[char1])
+            password = password.repalce(char2, spec_dict[char2])
+        else:
+            char1 = self.rng.choice(self.limited_special)
+            char2 = self.rng.choice(self.limited_special)
+            password = char1 + password + char2
+
+        # replace up to 2 characters from num_dict if present otherwise add numbers to beginning/end
+        if num_count == 1:
+            password = password.replace(num_holder[0], num_dict[num_holder[0]])
+            password = self.rng.choice(self.digits) + password
+        elif num_count == 2:
+            password = password.replace(num_holder[0], num_dict[num_holder[0]])
+            password = password.replace(num_holder[1], num_dict[num_holder[1]])
+        elif num_count > 2:
+            char1 = self.rng.choice(num_holder)
+            char2 = self.rng.choice(num_holder)
+            password = password.replace(char1, num_dict[char1])
+            password = password.repalce(char2, num_dict[char2])
+        else:
+            char1 = self.rng.choice(self.digits)
+            char2 = self.rng.choice(self.digits)
+            password = char1 + password + char2
+
+        # capitalize 2 random letters
+        cap_count = 0
+        while cap_count < 2:
+            char_index = self.rng.randrange(0, len(password))
+            char = password[char_index]
+            if char.isalpha() and char.islower():
+                if char_index == 0:
+                    password = char.upper() + password[1:]
+                    cap_count += 1
+                elif char_index == len(password)-1:
+                    password = password[:char_index] + char.upper()
+                    cap_count += 1
+                else:
+                    password = password[:char_index] + char.upper() + password[char_index+1:]
+                    cap_count += 1
+
+        return password
 
     def choose_password_type(self):
 

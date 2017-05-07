@@ -74,3 +74,23 @@ class TestPwGen(unittest.TestCase):
             test_password = password_gen.make_complex_xkcd_password()
             pass_match = password_regex.fullmatch(test_password)
             self.assertTrue(pass_match)
+
+    def test_complexify_password_8_char_2_spec_2_num(self):
+        password_gen = PasswordGenerator()
+        test_password = "awildend"
+        password_regex = re.compile(r"^@[wW]!1[dD]3[nN][dD]$")
+        for _ in range(10):
+            test_complexified_pass = password_gen.complexify_password(test_password)
+            pass_match = password_regex.fullmatch(test_complexified_pass)
+            self.assertTrue(pass_match)
+
+    def test_complexify_password_no_subs(self):
+        password_gen = PasswordGenerator()
+        test_password = "dfjkmnpruwy"
+        password_regex = re.compile(r"""^[0-9][!\"\#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~]
+                                         [a-zA-Z]{11}
+                                         [!\"\#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~][0-9]$""", re.VERBOSE)
+        for _ in range(25):
+            test_complexified_pass = password_gen.complexify_password(test_password)
+            pass_match = password_regex.fullmatch(test_complexified_pass)
+            self.assertTrue(pass_match)
